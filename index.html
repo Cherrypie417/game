@@ -17,8 +17,20 @@
         /* キャラクター表示エリア */
         #character-area { flex-grow: 1; display: flex; justify-content: center; align-items: flex-end; background-image: radial-gradient(#333, #000), url('https://via.placeholder.com/900x500/cccccc/ffffff?text=Background'); background-size: cover; background-position: center; position: relative; padding-top: 60px; overflow: hidden; }
         
-        /* キャラクター画像 (ドット絵をくっきり表示させる設定入り) */
-        #character-img { height: 80%; width: auto; object-fit: contain; transition: 0.3s; position: relative; z-index: 5; image-rendering: pixelated; }
+        /* キャラクター画像 (ガッツリ下に下げるために bottom を -150px に調整) */
+        #character-img { 
+            height: 80%; 
+            width: auto; 
+            object-fit: contain; 
+            transition: 0.3s; 
+            position: relative; 
+            z-index: 5; 
+            image-rendering: pixelated; 
+            transform: scale(2);        /* 画像を2倍に拡大 */
+            transform-origin: bottom;   /* 足元を基準に拡大 */
+            bottom: -150px;             /* 思い切って大きくマイナスに！ */
+            left: 0px;                  /* 左右は中央のまま */
+        }
 
         /* サイケデリックエフェクト (プレースホルダー) */
         #character-area-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.5; z-index: 1; pointer-events: none; }
