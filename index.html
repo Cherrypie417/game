@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AI恋愛シミュレーター(仮)</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: radial-gradient(circle, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%); display: flex; justify-content: center; align-items: center; height: 100vh; color: white; overflow: hidden; }
+        #game-container { width: 900px; height: 700px; background-color: #1a1a2e; border: 5px solid #ff00ff; border-radius: 15px; box-shadow: 0 0 25px rgba(255, 0, 255, 0.7); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        #status-bar { padding: 10px 20px; background-color: #333; color: white; display: flex; justify-content: flex-start; gap: 30px; font-weight: bold; border-bottom: 2px solid #ddd; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 10; }
+        #money-display-container { font-size: 24px; color: #ffeb3b; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: 'Impact', sans-serif; }
+        #affection-display { font-size: 18px; color: #e6f7ff; }
+        #character-area { flex-grow: 1; display: flex; justify-content: center; align-items: flex-end; background-image: radial-gradient(#333, #000), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='); background-size: cover; background-position: center; position: relative; padding-top: 60px; overflow: hidden; }
+        #character-img { height: 80%; width: auto; object-fit: contain; transition: 0.3s; position: relative; z-index: 5; image-rendering: pixelated; }
+        #bottom-area { height: 220px; background-color: #1a1a2e; border-top: 3px solid #ff00ff; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; z-index: 10; }
+        #dialogue-box { flex-grow: 1; font-size: 18px; margin-bottom: 10px; padding: 15px; background-color: #2e2e4e; border-radius: 10px; border: 2px solid #ff00ff; overflow-y: auto; color: #e6f7ff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-family: 'MS Gothic', sans-serif; }
+        #dialogue-box strong { color: #ff00ff; }
+        #action-menu { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; border: 3px solid #e6f7ff; border-radius: 10px; background: linear-gradient(145deg, #00f2fe 0%, #4facfe 100%); color: #1a1a2e; font-weight: bold; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+        button:hover { background: linear-gradient(145deg, #4facfe 0%, #00f2fe 100%); box-shadow: 0 0 15px rgba(0, 242, 254, 0.7); }
+        button:disabled { background: linear-gradient(145deg, #ccc 0%, #ccc 100%); cursor: not-allowed; border: 3px solid #aaa; color: #aaa; }
+        button#btn-work { background: linear-gradient(145deg, #f9d423 0%, #ff4e50 100%); color: #fff; border-color: #fff; }
+        button#btn-work:hover { box-shadow: 0 0 15px rgba(255, 78, 80, 0.7); }
+        button#btn-confess { background: linear-gradient(145deg, #ff00ff 0%, #ffb6c1 100%); color: #fff; border-color: #fff; }
+        button#btn-confess:hover { box-shadow: 0 0 15px rgba(255, 0, 255, 0.7); }
+        .sub-menu { display: none; margin-top: 10px; gap: 10px; justify-content: center; align-items: center; width: 100%; box-sizing: border-box; }
+        input[type="text"] { padding: 12px; width: 70%; font-size: 16px; border: 3px solid #ff00ff; border-radius: 10px; background-color: #1a1a2e; color: white; outline: none; }
+        select { padding: 12px; font-size: 16px; border: 3px solid #ff00ff; border-radius: 10px; background-color: #1a1a2e; color: white; outline: none; }
+        .sub-menu button { background: linear-gradient(145deg, #ff00ff 0%, #ffb6c1 100%); border-color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="status-bar">
+        <div id="money-display-container">¥ <span id="money-display">16,109</span></div>
+        <div>好感度: <span id="affection-display">0</span> / 100</div>
+    </div>
+
+    <div id="character-area">
+        <img id="character-img" src="" alt="キャラクター">
+    </div>
+
+    <div id="bottom-area">
+        <div id="dialogue-box">ここに会話が表示されます。</div>
+        
+        <div id="action-menu">
+            <button onclick="openChat()">会話</button>
+            <button onclick="openGift()">プレゼント</button>
+            <button id="btn-work" onclick="work()">仕事!!</button>
+            <button onclick="openShop()">買い物</button>
+            <button id="btn-confess" onclick="confess()">告白</button>
+        </div>
+
+        <div id="sub-menu-chat" class="sub-menu">
+            <input type="text" id="chat-input" placeholder="話しかける内容を入力...">
+            <button onclick="sendChat()">送信</button>
+            <button onclick="closeSubMenu()">戻る</button>
+        </div>
+
+        <div id="sub-menu-shop" class="sub-menu">
+            <select id="shop-select">
+                <option value="1000">ケーキ (1,000円)</option>
+                <option value="5000">ネックレス (5,000円)</option>
+            </select>
+            <button onclick="buyItem()">買う</button>
+            <button onclick="closeSubMenu()">戻る</button>
+        </div>
+
+        <div id="sub-menu-gift" class="sub-menu">
+            <select id="gift-select"></select>
+            <button onclick="giveGift()">渡す</button>
+            <button onclick="closeSubMenu()">戻る</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let state = {
+        money: 16109,
+        affection: 0,
+        inventory: {
+            "ケーキ": 0,
+            "ネックレス": 0
+        }
+    };
+
+    // ▼▼▼ ここに変換した長い文字列を貼り付けます ▼▼▼
+    const expressions = {
+        normal: "ここにnormalのBase64文字列を貼り付ける",
+        close: "ここにcloseのBase64文字列を貼り付ける",
+        smile: "ここにsmileのBase64文字列を貼り付ける",
+        angry: "ここにangryのBase64文字列を貼り付ける"
+    };
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+    const dialogueBox = document.getElementById('dialogue-box');
+
+    function updateUI() {
+        document.getElementById('money-display').innerText = state.money.toLocaleString('ja-JP');
+        document.getElementById('affection-display').innerText = state.affection;
+    }
+
+    function showMessage(text) {
+        dialogueBox.innerHTML = `<strong>ヒロイン:</strong> 「${text}」`;
+    }
+
+    function changeExpression(exp) {
+        document.getElementById('character-img').src = expressions[exp];
+    }
+
+    function closeSubMenu() {
+        document.getElementById('action-menu').style.display = 'flex';
+        document.querySelectorAll('.sub-menu').forEach(el => el.style.display = 'none');
+    }
+
+    function work() {
+        showMessage("え、仕事？いいよ、手伝ってあげる。でも、簡単じゃないからね！<br>（将来、ここにミニゲームが追加されます。）");
+        changeExpression('smile');
+        state.money += 2000;
+        updateUI();
+    }
+
+    function openShop() {
+        document.getElementById('action-menu').style.display = 'none';
+        document.getElementById('sub-menu-shop').style.display = 'flex';
+        showMessage("いらっしゃいませ。何を買いますか？");
+    }
+
+    function buyItem() {
+        const select = document.getElementById('shop-select');
+        const price = parseInt(select.value);
+        const itemName = select.options[select.selectedIndex].text.split(" ")[0];
+
+        if (state.money >= price) {
+            state.money -= price;
+            state.inventory[itemName]++;
+            updateUI();
+            showMessage(`（${itemName}を購入した！）`);
+        } else {
+            showMessage("（お金が足りない…）");
+        }
+    }
+
+    function openGift() {
+        const select = document.getElementById('gift-select');
+        select.innerHTML = '';
+        let hasItem = false;
+        
+        for (let item in state.inventory) {
+            if (state.inventory[item] > 0) {
+                let option = document.createElement('option');
+                option.value = item;
+                option.innerText = `${item} (所持: ${state.inventory[item]})`;
+                select.appendChild(option);
+                hasItem = true;
+            }
+        }
+
+        if (!hasItem) {
+            showMessage("（プレゼントできるアイテムを持っていない…）");
+            return;
+        }
+
+        document.getElementById('action-menu').style.display = 'none';
+        document.getElementById('sub-menu-gift').style.display = 'flex';
+        showMessage("えっ、私に何かくれるの…？");
+    }
+
+    function giveGift() {
+        const select = document.getElementById('gift-select');
+        const itemName = select.value;
+
+        if (state.inventory[itemName] > 0) {
+            state.inventory[itemName]--;
+            
+            if (itemName === "ケーキ") {
+                state.affection += 5;
+                changeExpression('close');
+                showMessage("ん〜！美味しいっ！甘いもの大好きなんだ、ありがとう！");
+            } else if (itemName === "ネックレス") {
+                state.affection += 15;
+                changeExpression('smile');
+                showMessage("えっ…こんな可愛いもの…！すごく嬉しい、大切にするね…！");
+            }
+            updateUI();
+            closeSubMenu();
+        }
+    }
+
+    function confess() {
+        if (state.affection >= 100) {
+            changeExpression('smile');
+            showMessage("……うん。私も、ずっと前から好きでした。よろしくお願いします…！\n【HAPPY END】");
+            document.getElementById('action-menu').style.display = 'none';
+        } else {
+            changeExpression('angry');
+            showMessage("は？急に何言ってるの？私たちまだそんなに仲良くないでしょ！からかわないでよね！");
+        }
+    }
+
+    function openChat() {
+        document.getElementById('action-menu').style.display = 'none';
+        document.getElementById('sub-menu-chat').style.display = 'flex';
+        document.getElementById('chat-input').value = '';
+    }
+
+    async function sendChat() {
+        const inputStr = document.getElementById('chat-input').value;
+        if (!inputStr) return;
+
+        closeSubMenu();
+        showMessage("（考え中...）");
+
+        const aiResponse = await mockAiApi(inputStr);
+
+        state.affection += aiResponse.affectionChange;
+        if (state.affection < 0) state.affection = 0;
+        
+        updateUI();
+        changeExpression(aiResponse.expression);
+        showMessage(aiResponse.reply);
+    }
+
+    function mockAiApi(userInput) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                let reply = "ふーん、そうなんだ。";
+                let exp = "normal";
+                let aff = 0;
+
+                if (userInput.includes("好き") || userInput.includes("かわいい")) {
+                    reply = "えっ…あ、ありがとう…！";
+                    exp = "smile";
+                    aff = 3;
+                } else if (userInput.includes("仕事") || userInput.includes("疲れた")) {
+                    reply = "お疲れ様！無理しないでね。";
+                    exp = "normal";
+                    aff = 2;
+                } else if (userInput.includes("バカ") || userInput.includes("嫌い")) {
+                    reply = "なによ、いきなり！怒るよ！";
+                    exp = "angry";
+                    aff = -5;
+                }
+
+                resolve({
+                    reply: reply,
+                    expression: exp,
+                    affectionChange: aff
+                });
+            }, 1000);
+        });
+    }
+
+    // 初期化 (最初はnormalの画像を表示)
+    document.getElementById('character-img').src = expressions.normal;
+    updateUI();
+</script>
+
+</body>
+</html>
