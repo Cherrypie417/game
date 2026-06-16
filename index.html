@@ -4,24 +4,46 @@
     <meta charset="UTF-8">
     <title>AI恋愛シミュレーター(仮)</title>
     <style>
+        /* 全体のポップで刺激的なサイケデリック設定 */
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: radial-gradient(circle, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%); display: flex; justify-content: center; align-items: center; height: 100vh; color: white; overflow: hidden; }
+        
         #game-container { width: 900px; height: 700px; background-color: #1a1a2e; border: 5px solid #ff00ff; border-radius: 15px; box-shadow: 0 0 25px rgba(255, 0, 255, 0.7); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* ステータスバー (左上に所持金) */
         #status-bar { padding: 10px 20px; background-color: #333; color: white; display: flex; justify-content: flex-start; gap: 30px; font-weight: bold; border-bottom: 2px solid #ddd; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 10; }
         #money-display-container { font-size: 24px; color: #ffeb3b; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-family: 'Impact', sans-serif; }
         #affection-display { font-size: 18px; color: #e6f7ff; }
-        #character-area { flex-grow: 1; display: flex; justify-content: center; align-items: flex-end; background-image: radial-gradient(#333, #000), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='); background-size: cover; background-position: center; position: relative; padding-top: 60px; overflow: hidden; }
+
+        /* キャラクター表示エリア */
+        #character-area { flex-grow: 1; display: flex; justify-content: center; align-items: flex-end; background-image: radial-gradient(#333, #000), url('https://via.placeholder.com/900x500/cccccc/ffffff?text=Background'); background-size: cover; background-position: center; position: relative; padding-top: 60px; overflow: hidden; }
+        
+        /* キャラクター画像 (ドット絵をくっきり表示させる設定入り) */
         #character-img { height: 80%; width: auto; object-fit: contain; transition: 0.3s; position: relative; z-index: 5; image-rendering: pixelated; }
+
+        /* サイケデリックエフェクト (プレースホルダー) */
+        #character-area-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.5; z-index: 1; pointer-events: none; }
+
+        /* コンボ表示（プレースホルダー） */
+        #combo-display { position: absolute; top: 100px; left: 20px; font-size: 32px; color: #ff00ff; font-family: 'MS Gothic', sans-serif; text-shadow: 3px 3px 6px rgba(0,0,0,0.7); z-index: 10; opacity: 0.8; font-weight: bold; pointer-events: none; }
+
+        /* メッセージ＆システムエリア (下部) */
         #bottom-area { height: 220px; background-color: #1a1a2e; border-top: 3px solid #ff00ff; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; z-index: 10; }
         #dialogue-box { flex-grow: 1; font-size: 18px; margin-bottom: 10px; padding: 15px; background-color: #2e2e4e; border-radius: 10px; border: 2px solid #ff00ff; overflow-y: auto; color: #e6f7ff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-family: 'MS Gothic', sans-serif; }
         #dialogue-box strong { color: #ff00ff; }
+
+        /* メインアクションメニュー */
         #action-menu { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         button { padding: 15px 30px; font-size: 18px; cursor: pointer; border: 3px solid #e6f7ff; border-radius: 10px; background: linear-gradient(145deg, #00f2fe 0%, #4facfe 100%); color: #1a1a2e; font-weight: bold; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
         button:hover { background: linear-gradient(145deg, #4facfe 0%, #00f2fe 100%); box-shadow: 0 0 15px rgba(0, 242, 254, 0.7); }
         button:disabled { background: linear-gradient(145deg, #ccc 0%, #ccc 100%); cursor: not-allowed; border: 3px solid #aaa; color: #aaa; }
+        
+        /* 特別なボタンデザイン */
         button#btn-work { background: linear-gradient(145deg, #f9d423 0%, #ff4e50 100%); color: #fff; border-color: #fff; }
         button#btn-work:hover { box-shadow: 0 0 15px rgba(255, 78, 80, 0.7); }
         button#btn-confess { background: linear-gradient(145deg, #ff00ff 0%, #ffb6c1 100%); color: #fff; border-color: #fff; }
         button#btn-confess:hover { box-shadow: 0 0 15px rgba(255, 0, 255, 0.7); }
+
+        /* サブメニュー */
         .sub-menu { display: none; margin-top: 10px; gap: 10px; justify-content: center; align-items: center; width: 100%; box-sizing: border-box; }
         input[type="text"] { padding: 12px; width: 70%; font-size: 16px; border: 3px solid #ff00ff; border-radius: 10px; background-color: #1a1a2e; color: white; outline: none; }
         select { padding: 12px; font-size: 16px; border: 3px solid #ff00ff; border-radius: 10px; background-color: #1a1a2e; color: white; outline: none; }
@@ -37,7 +59,10 @@
     </div>
 
     <div id="character-area">
-        <img id="character-img" src="" alt="キャラクター">
+        <img id="character-img" src="通常-removebg-preview.png" alt="キャラクター">
+        
+        <img id="character-area-fx" src="https://via.placeholder.com/900x500/cccccc/ffffff?text=Neon+FX+Placeholder" alt="FX背景">
+        <div id="combo-display">204 コンボ!!</div>
     </div>
 
     <div id="bottom-area">
@@ -75,6 +100,7 @@
 </div>
 
 <script>
+    // --- ゲームの初期状態 ---
     let state = {
         money: 16109,
         affection: 0,
@@ -84,42 +110,49 @@
         }
     };
 
-    // ▼▼▼ ここに変換した長い文字列を貼り付けます ▼▼▼
+    // --- 透過成功したPNG画像の定義 ---
     const expressions = {
-        normal: "ここにnormalのBase64文字列を貼り付ける",
-        close: "ここにcloseのBase64文字列を貼り付ける",
-        smile: "ここにsmileのBase64文字列を貼り付ける",
-        angry: "ここにangryのBase64文字列を貼り付ける"
+        normal: "通常-removebg-preview.png",   // 通常（口開け）
+        close: "目閉じ-removebg-preview.png",  // 食べ物を食べた時（目閉じ）
+        smile: "笑顔.png",                     // 嬉しい時・告白成功（笑顔）
+        angry: "怒り-removebg-preview.png"     // 怒った時・告白失敗（怒り）
     };
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     const dialogueBox = document.getElementById('dialogue-box');
 
+    // UIの更新
     function updateUI() {
         document.getElementById('money-display').innerText = state.money.toLocaleString('ja-JP');
         document.getElementById('affection-display').innerText = state.affection;
     }
 
+    // メッセージの表示
     function showMessage(text) {
         dialogueBox.innerHTML = `<strong>ヒロイン:</strong> 「${text}」`;
     }
 
+    // 表情の変更
     function changeExpression(exp) {
         document.getElementById('character-img').src = expressions[exp];
     }
 
+    // サブメニューを閉じる
     function closeSubMenu() {
         document.getElementById('action-menu').style.display = 'flex';
         document.querySelectorAll('.sub-menu').forEach(el => el.style.display = 'none');
     }
 
+    // --- 1. 仕事 ---
     function work() {
         showMessage("え、仕事？いいよ、手伝ってあげる。でも、簡単じゃないからね！<br>（将来、ここにミニゲームが追加されます。）");
         changeExpression('smile');
-        state.money += 2000;
+
+        const earned = 2000;
+        state.money += earned;
         updateUI();
     }
 
+    // --- 2. 買い物 ---
     function openShop() {
         document.getElementById('action-menu').style.display = 'none';
         document.getElementById('sub-menu-shop').style.display = 'flex';
@@ -141,6 +174,7 @@
         }
     }
 
+    // --- 3. プレゼント ---
     function openGift() {
         const select = document.getElementById('gift-select');
         select.innerHTML = '';
@@ -187,6 +221,7 @@
         }
     }
 
+    // --- 4. 告白 ---
     function confess() {
         if (state.affection >= 100) {
             changeExpression('smile');
@@ -198,6 +233,7 @@
         }
     }
 
+    // --- 5. 会話 (ダミーAI実装) ---
     function openChat() {
         document.getElementById('action-menu').style.display = 'none';
         document.getElementById('sub-menu-chat').style.display = 'flex';
@@ -251,8 +287,7 @@
         });
     }
 
-    // 初期化 (最初はnormalの画像を表示)
-    document.getElementById('character-img').src = expressions.normal;
+    // 初期化
     updateUI();
 </script>
 
